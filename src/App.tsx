@@ -1,37 +1,81 @@
-import { motion } from 'motion/react';
-import { Stethoscope, ClipboardList, Clock, ShieldCheck, Star, ArrowRight, User, Phone, Mail, MapPin, Calendar as CalendarIcon, CheckCircle2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { 
+  Stethoscope, ClipboardList, Clock, ShieldCheck, Star, ArrowRight, User, Phone, Mail, MapPin, 
+  Calendar as CalendarIcon, CheckCircle2, Menu, X, Heart, Microscope, Activity, Award,
+  Users, Target, Zap
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+
+// --- Animation Variants ---
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
 
 // --- Components ---
 
 const Navbar = () => {
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const NavLinks = ({ className = "" }: { className?: string }) => (
+    <>
+      <a href="#services" className={cn("text-sm font-medium hover:text-primary transition-colors", className)}>Services</a>
+      <a href="#about" className={cn("text-sm font-medium hover:text-primary transition-colors", className)}>Specialists</a>
+      <a href="#mission" className={cn("text-sm font-medium hover:text-primary transition-colors", className)}>About Us</a>
+      <a href="#reviews" className={cn("text-sm font-medium hover:text-primary transition-colors", className)}>Reviews</a>
+    </>
+  );
+
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-bottom border-border/40">
+    <nav className={cn(
+      "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+      isScrolled ? "bg-background/80 backdrop-blur-md border-b border-border shadow-sm py-3" : "bg-transparent py-5"
+    )}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-primary-foreground">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-2 group cursor-pointer">
+            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-primary-foreground group-hover:rotate-12 transition-transform duration-300">
               <Stethoscope size={24} />
             </div>
             <span className="text-xl font-bold tracking-tight">VitaCare</span>
           </div>
+
+          {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-8">
-            <a href="#services" className="text-sm font-medium hover:text-primary transition-colors">Services</a>
-            <a href="#about" className="text-sm font-medium hover:text-primary transition-colors">About</a>
-            <a href="#reviews" className="text-sm font-medium hover:text-primary transition-colors">Reviews</a>
+            <NavLinks />
             <Dialog>
-              <DialogTrigger render={<Button variant="default" size="sm" className="rounded-full px-6" />}>Book Appointment</DialogTrigger>
+              <DialogTrigger render={<Button variant="default" size="sm" className="rounded-full px-6 shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all" />}>
+                Book Appointment
+              </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                   <DialogTitle>Book an Appointment</DialogTitle>
@@ -42,6 +86,34 @@ const Navbar = () => {
                 <BookingForm onSuccess={() => {}} />
               </DialogContent>
             </Dialog>
+          </div>
+
+          {/* Mobile Hamburguer */}
+          <div className="flex md:hidden">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <Menu size={24} />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="flex flex-col gap-8 pt-16">
+                <SheetHeader className="text-left">
+                  <SheetTitle>Navigation Menu</SheetTitle>
+                </SheetHeader>
+                <nav className="flex flex-col gap-6">
+                  <NavLinks className="text-lg py-2 border-b border-border/50" />
+                </nav>
+                <Dialog>
+                  <DialogTrigger render={<Button className="w-full rounded-full" />}>Book Appointment</DialogTrigger>
+                   <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle>Book an Appointment</DialogTitle>
+                    </DialogHeader>
+                    <BookingForm onSuccess={() => {}} />
+                  </DialogContent>
+                </Dialog>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </div>
@@ -128,62 +200,186 @@ const Services = () => {
   const services = [
     {
       title: "Joint Replacement",
-      desc: "Advanced knee and hip replacement surgery using robotic assistance.",
-      icon: <Stethoscope size={24} />,
-      color: "blue"
+      desc: "Advanced knee and hip replacement surgery using state-of-the-art robotic assistance.",
+      icon: <Activity size={24} />,
+      color: "blue",
+      details: ["Total Hip Arthroplasty", "Partial Knee Replacement", "Revision Surgery"]
     },
     {
       title: "Sports Medicine",
-      desc: "Treatment for ligament tears, fractures, and performance injuries.",
-      icon: <Star size={24} />,
-      color: "green"
+      desc: "Comprehensive treatment for ligament tears, fractures, and high-performance injuries.",
+      icon: <Zap size={24} />,
+      color: "green",
+      details: ["ACL Reconstruction", "Meniscus Repair", "Rotator Cuff Treatment"]
     },
     {
       title: "Physical Therapy",
-      desc: "Personalized rehabilitation programs for post-op and chronic pain.",
-      icon: <Clock size={24} />,
-      color: "purple"
+      desc: "Personalized rehabilitation programs designed for both post-op and chronic pain management.",
+      icon: <Heart size={24} />,
+      color: "purple",
+      details: ["Strength Building", "Flexibility Training", "Pain Mitigation"]
     },
     {
-      title: "Spine Care",
-      desc: "Comprehensive diagnosis and minimally invasive spine procedures.",
-      icon: <ShieldCheck size={24} />,
-      color: "orange"
+      title: "Regenerative Medicine",
+      desc: "Cutting-edge biological treatments to stimulate natural healing and tissue repair.",
+      icon: <Microscope size={24} />,
+      color: "orange",
+      details: ["Stem Cell Therapy", "PRP Injections", "Biological Scaffolding"]
     }
   ];
 
   return (
-    <section id="services" className="py-24 bg-secondary/30">
+    <section id="services" className="py-24 bg-secondary/30 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold tracking-tight mb-4">Specialized Medical Services</h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Providing comprehensive care across a range of orthopedic specialties using the latest medical technologies.
+        <motion.div 
+          className="text-center mb-20"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeInUp}
+        >
+          <Badge variant="secondary" className="mb-4">Our Expertise</Badge>
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">Dedicated Medical Services</h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
+            We provide holistic care by merging advanced diagnostic tools with personalized treatment plans tailored to your lifestyle.
           </p>
-        </div>
+        </motion.div>
         
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <motion.div 
+          className="grid md:grid-cols-2 lg:grid-cols-4 gap-8"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={staggerContainer}
+        >
           {services.map((item, i) => (
             <motion.div
               key={i}
-              whileHover={{ y: -5 }}
-              transition={{ duration: 0.2 }}
+              variants={fadeInUp}
+              whileHover={{ y: -10 }}
+              className="group"
             >
-              <Card className="h-full border-border/50 hover:border-primary/50 transition-colors">
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-4">
+              <Card className="h-full border-border/50 bg-background hover:border-primary/50 transition-all duration-500 overflow-hidden relative shadow-sm hover:shadow-xl">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 group-hover:bg-primary/10 transition-colors duration-500"></div>
+                <CardHeader className="relative z-10">
+                  <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform duration-500">
                     {item.icon}
                   </div>
-                  <CardTitle className="text-xl">{item.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-sm leading-relaxed">
+                  <CardTitle className="text-2xl font-bold mb-2 transition-colors group-hover:text-primary">{item.title}</CardTitle>
+                  <CardDescription className="text-base leading-relaxed mb-4">
                     {item.desc}
                   </CardDescription>
+                </CardHeader>
+                <CardContent className="relative z-10 pt-0">
+                  <ul className="space-y-2 mb-6">
+                    {item.details.map((detail, j) => (
+                      <li key={j} className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary/40"></div>
+                        {detail}
+                      </li>
+                    ))}
+                  </ul>
+                  <Button variant="ghost" className="p-0 text-primary hover:bg-transparent group-hover:translate-x-2 transition-transform h-auto">
+                    Learn service details <ArrowRight size={16} className="ml-2" />
+                  </Button>
                 </CardContent>
               </Card>
             </motion.div>
           ))}
+        </motion.div>
+      </div>
+    </section>
+  );
+};
+
+const AboutUsMission = () => {
+  return (
+    <section id="mission" className="py-24 overflow-hidden relative">
+      <div className="absolute top-1/2 left-0 w-96 h-96 bg-primary/5 rounded-full filter blur-3xl -translate-x-1/2 -z-10"></div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid lg:grid-cols-2 gap-20 items-center">
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <Badge variant="outline" className="mb-4">Our History</Badge>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-8">Pioneering Better Healthcare Solutions Since 2008</h2>
+            <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
+              At VitaCare, we believe that healthcare is a journey, not just a destination. Our clinic was founded on the principle that every patient deserves access to elite medical expertise delivered with genuine empathy.
+            </p>
+            
+            <div className="grid sm:grid-cols-2 gap-8">
+              {[
+                {
+                  icon: <Target className="text-primary" />,
+                  title: "Our Mission",
+                  text: "To restore functional freedom through evidence-based orthopedic care."
+                },
+                {
+                  icon: <Users className="text-primary" />,
+                  title: "Patient-First",
+                  text: "We prioritize your goals and lifestyle in every treatment decision."
+                },
+                {
+                  icon: <Award className="text-primary" />,
+                  title: "Clinical Excellence",
+                  text: "Continuously training in the latest minimally invasive surgical techniques."
+                },
+                {
+                  icon: <Zap className="text-primary" />,
+                  title: "Fast Recovery",
+                  text: "Optimizing protocols to get you back to your life sooner."
+                }
+              ].map((item, i) => (
+                <div key={i} className="space-y-3">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    {item.icon}
+                  </div>
+                  <h4 className="font-bold text-lg">{item.title}</h4>
+                  <p className="text-sm text-muted-foreground">{item.text}</p>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+          <motion.div 
+            className="grid grid-cols-2 gap-4"
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <div className="space-y-4 pt-12">
+              <div className="aspect-[3/4] rounded-2xl overflow-hidden shadow-lg group">
+                <img 
+                  src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&q=80&w=600" 
+                  alt="Modern Lab" 
+                  className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+              <div className="bg-primary p-8 rounded-2xl text-primary-foreground">
+                <p className="text-4xl font-bold mb-2">15+</p>
+                <p className="text-sm opacity-90 uppercase tracking-widest font-semibold text-white/90">Clinical Awards</p>
+              </div>
+            </div>
+            <div className="space-y-4">
+               <div className="bg-secondary p-8 rounded-2xl">
+                <p className="text-4xl font-bold mb-2">10k</p>
+                <p className="text-sm text-muted-foreground uppercase tracking-widest font-semibold">Patients Helped</p>
+              </div>
+              <div className="aspect-[3/4] rounded-2xl overflow-hidden shadow-lg relative group">
+                <img 
+                  src="https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&q=80&w=600" 
+                  alt="Doctor with Patient" 
+                  className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+            </div>
+          </motion.div>
         </div>
       </div>
     </section>
@@ -527,6 +723,8 @@ export default function App() {
         <Hero />
         
         <Services />
+
+        <AboutUsMission />
 
         <SpecialistSpotlight />
         
